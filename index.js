@@ -8,9 +8,9 @@ const config = require("./config");
 const movie_path = config.movie_path;
 const xxx_path = config.xxx_path;
 const series_directory_path = config.series_directory_path;
-const series_current_ep = config.series_current_ep;
 const series_directory_files_blacklist_extensions =
     config.series_directory_files_blacklist_extensions;
+let series_current_ep = config.series_current_ep;
 
 // local configs
 const app = express();
