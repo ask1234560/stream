@@ -1,42 +1,49 @@
 const express = require("express");
-const app = express();
-const port = 5002;
 const fs = require("fs");
 const { spawn, spawnSync } = require("child_process");
 const path = require("path");
+const config = require("./config");
 
-const movie_path =
-    "/home/ananthu/Public/159/Andhaghaaram.2020.720p.NF.WEB-DL.x264-Pahe.in.mkv";
-const xxx_path = "/home/ananthu/.local/share/x.mp4";
-const series_directory_path = "/home/ananthu/Downloads/Telegram Desktop";
-let series_current_ep = 1;
+// global configs
+const movie_path = config.movie_path;
+const xxx_path = config.xxx_path;
+const series_directory_path = config.series_directory_path;
+const series_current_ep = config.series_current_ep;
+const series_directory_files_blacklist_extensions =
+    config.series_directory_files_blacklist_extensions;
+
+// local configs
+const app = express();
+const port = 5002;
 let series_directory_files = [];
-let series_directory_files_blacklist_extensions = [".jpg", ".jpeg", ".png"];
 let job_completed = true;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// finding files in series directory
 try {
-    const files = fs.readdir(series_directory_path, function (err, files) {
-        for (const file of files) {
-            let flag = false;
-            let extname = path.extname(file);
-            if (extname) {
-                series_directory_files_blacklist_extensions.some((ext) => {
-                    if (extname == ext) {
-                        flag = true;
-                        return true;
+    if (fs.existsSync(series_directory_path)) {
+        const files = fs.readdir(series_directory_path, function (err, files) {
+            for (const file of files) {
+                let flag = false;
+                let extname = path.extname(file);
+                if (extname) {
+                    series_directory_files_blacklist_extensions.some((ext) => {
+                        if (extname == ext) {
+                            flag = true;
+                            return true;
+                        }
+                    });
+                    if (!flag) {
+                        series_directory_files.push(file);
                     }
-                });
-                if (!flag) {
-                    series_directory_files.push(file);
                 }
             }
-        }
-    });
+        });
+    }
 } catch (err) {
-    console.error("series directory files not found :: ", err);
+    console.error("series directory files :: ", err);
 }
 
 function playVideos(req, res, path) {
@@ -84,9 +91,10 @@ app.get("/x", function (req, res) {
 });
 
 app.get("/s", function (req, res) {
-    var current_ep_path = `${series_directory_path}/${
+    var current_ep_path = path.join(
+        series_directory_path,
         series_directory_files[series_current_ep - 1]
-    }`;
+    );
     playVideos(req, res, current_ep_path);
 });
 
