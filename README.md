@@ -4,6 +4,7 @@ Stream files from your PC.
 # Functionalities
 * Stream movies, series.
 * download streaming contents using youtube-dl
+* control functionality using [http shortcuts](https://play.google.com/store/apps/details?id=ch.rmy.android.http_shortcuts&hl=en_IN&gl=US) app
 
 # Installation
 * git clone https://github.com/ask1234560/stream
