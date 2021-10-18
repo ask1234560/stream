@@ -36,6 +36,7 @@ watchSeriesFileChanges
 function findFiles() {
     try {
         if (fs.existsSync(series_directory_path)) {
+            series_directory_files = [];
             const files = fs.readdir(
                 series_directory_path,
                 function (err, files) {
@@ -172,10 +173,16 @@ app.get("/job/status", function (req, res) {
 });
 
 app.post("/series/ep/increment", function (req, res) {
-    series_current_ep += 1;
-    res.json({
-        status: "series episode incremented",
-    });
+    if (series_current_ep + 1 < series_directory_files.length) {
+        series_current_ep += 1;
+        res.json({
+            status: "series episode incremented",
+        });
+    } else {
+        res.json({
+            status: "invalid request",
+        });
+    }
 });
 
 app.post("/series/ep/decrement", function (req, res) {
@@ -214,7 +221,7 @@ app.get("/series/ep/status", function (req, res) {
     res.json({
         status: `current series episode ${series_current_ep} :: ${
             series_directory_files[series_current_ep - 1]
-        }`,
+        } :: Total available :: ${series_directory_files.length}`,
     });
 });
 
