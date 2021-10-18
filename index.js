@@ -3,6 +3,7 @@ const fs = require("fs");
 const { spawn, spawnSync } = require("child_process");
 const path = require("path");
 const config = require("./config");
+const chokidar = require("chokidar");
 
 // global configs
 const movie_path = config.movie_path;
@@ -21,29 +22,46 @@ let job_completed = true;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// watch for new files addition
+const watchSeriesFileChanges = chokidar.watch(series_directory_path);
+watchSeriesFileChanges
+    .on("add", (event, path) => {
+        findFiles();
+    })
+    .on("unlink", (event, path) => {
+        findFiles();
+    });
+
 // finding files in series directory
-try {
-    if (fs.existsSync(series_directory_path)) {
-        const files = fs.readdir(series_directory_path, function (err, files) {
-            for (const file of files) {
-                let flag = false;
-                let extname = path.extname(file);
-                if (extname) {
-                    series_directory_files_blacklist_extensions.some((ext) => {
-                        if (extname == ext) {
-                            flag = true;
-                            return true;
+function findFiles() {
+    try {
+        if (fs.existsSync(series_directory_path)) {
+            const files = fs.readdir(
+                series_directory_path,
+                function (err, files) {
+                    for (const file of files) {
+                        let flag = false;
+                        let extname = path.extname(file);
+                        if (extname) {
+                            series_directory_files_blacklist_extensions.some(
+                                (ext) => {
+                                    if (extname == ext) {
+                                        flag = true;
+                                        return true;
+                                    }
+                                }
+                            );
+                            if (!flag) {
+                                series_directory_files.push(file);
+                            }
                         }
-                    });
-                    if (!flag) {
-                        series_directory_files.push(file);
                     }
                 }
-            }
-        });
+            );
+        }
+    } catch (err) {
+        console.error("series directory files :: ", err);
     }
-} catch (err) {
-    console.error("series directory files :: ", err);
 }
 
 function playVideos(req, res, path) {
@@ -177,7 +195,7 @@ app.post("/series/ep/set", function (req, res) {
     var ep = req.body["s-ep"];
     if (ep) {
         series_directory_files.some((file, index) => {
-            if (file.includes(ep)) {
+            if (file.toLowerCase().includes(ep.toLowerCase())) {
                 series_current_ep = index + 1;
                 return true;
             }
