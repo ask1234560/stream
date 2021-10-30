@@ -36,10 +36,10 @@ watchSeriesFileChanges
 function findFiles() {
     try {
         if (fs.existsSync(series_directory_path)) {
-            series_directory_files = [];
             const files = fs.readdir(
                 series_directory_path,
                 function (err, files) {
+                    series_directory_files = [];
                     for (const file of files) {
                         let flag = false;
                         let extname = path.extname(file);
@@ -221,7 +221,7 @@ app.get("/series/ep/status", function (req, res) {
     res.json({
         status: `current series episode ${series_current_ep} :: ${
             series_directory_files[series_current_ep - 1]
-        } :: Total available :: ${series_directory_files.length}`,
+        } :: Total available ${series_directory_files.length}`,
     });
 });
 
