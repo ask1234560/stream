@@ -173,7 +173,7 @@ app.get("/job/status", function (req, res) {
 });
 
 app.post("/series/ep/increment", function (req, res) {
-    if (series_current_ep + 1 < series_directory_files.length) {
+    if (series_current_ep < series_directory_files.length) {
         series_current_ep += 1;
         res.json({
             status: "series episode incremented",
